@@ -1,0 +1,66 @@
+auth.{$DOMAIN} {
+	handle /custom-auth.css {
+		root * /srv/authelia-theme
+		file_server
+	}
+	handle {
+		reverse_proxy authelia:9091 {
+			header_up Accept-Encoding identity
+		}
+		replace </head> "<link rel='stylesheet' href='/custom-auth.css'></head>"
+	}
+}
+
+ollama.{$DOMAIN} {
+	@unauthorized not header Authorization "Bearer {$OLLAMA_API_KEY}"
+	respond @unauthorized 403
+
+	reverse_proxy host.docker.internal:11434
+}
+
+code.{$DOMAIN} {
+	forward_auth authelia:9091 {
+		uri /api/authz/forward-auth
+		copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
+	}
+	reverse_proxy host.docker.internal:8080
+}
+
+{$DOMAIN} {
+	header {
+		X-Frame-Options "SAMEORIGIN"
+		X-Content-Type-Options "nosniff"
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
+
+	# Block sensitive paths before any file serving
+	handle /.git/* {
+		respond 404
+	}
+	handle /.git {
+		respond 404
+	}
+
+	# Admin music routes: require Authelia 2FA
+	@admin path /music/admin /music/admin/*
+	handle @admin {
+		forward_auth authelia:9091 {
+			uri /api/authz/forward-auth
+			copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
+		}
+		reverse_proxy wallybrain-music:8800
+	}
+
+	# Public music routes: no auth required
+	@music path /music /music/*
+	handle @music {
+		reverse_proxy wallybrain-music:8800
+	}
+
+	# Everything else: serve static Semantic Training site
+	handle {
+		root * /srv/semantic-training
+		file_server
+	}
+}

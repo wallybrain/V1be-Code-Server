@@ -1,0 +1,340 @@
+/* Terminal Aesthetic for Authelia Login
+   VT323 font, green-on-black, scanlines, glow */
+
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+:root {
+    --t-bg: #0a0a0a;
+    --t-bg-dark: #000000;
+    --t-primary: #00ff41;
+    --t-primary-dim: #00b82e;
+    --t-primary-dark: #007a1f;
+    --t-glow: 0 0 5px #00ff41, 0 0 10px #007a1f;
+    --t-glow-strong: 0 0 7px #00ff41, 0 0 15px #007a1f, 0 0 25px #007a1f;
+    --t-font: 'VT323', monospace;
+}
+
+/* === Base === */
+
+body {
+    background: var(--t-bg) !important;
+    font-family: var(--t-font) !important;
+    color: var(--t-primary) !important;
+    animation: flicker 0.15s infinite;
+}
+
+/* Scanline overlay — static horizontal lines */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        to bottom,
+        rgba(0, 255, 65, 0.03) 50%,
+        rgba(0, 0, 0, 0.3) 50%
+    );
+    background-size: 100% 4px;
+    pointer-events: none;
+    z-index: 9999;
+}
+
+/* Moving scanline bar */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100px;
+    background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(0, 255, 65, 0.1) 50%,
+        transparent 100%
+    );
+    pointer-events: none;
+    z-index: 9999;
+    animation: scanline 8s linear infinite;
+    opacity: 0.3;
+}
+
+@keyframes scanline {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100vh); }
+}
+
+@keyframes flicker {
+    0% { opacity: 0.97; }
+    5% { opacity: 0.95; }
+    10% { opacity: 0.98; }
+    15% { opacity: 0.96; }
+    20% { opacity: 0.97; }
+    100% { opacity: 0.97; }
+}
+
+@keyframes textGlow {
+    0%, 100% { text-shadow: var(--t-glow); }
+    50% { text-shadow: var(--t-glow-strong); }
+}
+
+/* === MUI Overrides === */
+
+/* Global text color */
+* {
+    font-family: var(--t-font) !important;
+}
+
+/* App bar */
+.MuiAppBar-root {
+    background: var(--t-bg-dark) !important;
+    box-shadow: 0 1px 0 var(--t-primary-dark) !important;
+}
+
+/* Main container background */
+.MuiContainer-root {
+    background: transparent !important;
+}
+
+/* Paper / card surfaces */
+.MuiPaper-root {
+    background: var(--t-bg-dark) !important;
+    color: var(--t-primary) !important;
+    box-shadow: 0 0 15px rgba(0, 255, 65, 0.1), inset 0 0 15px rgba(0, 0, 0, 0.5) !important;
+    border: 1px solid var(--t-primary-dark) !important;
+    border-radius: 0 !important;
+}
+
+/* Typography */
+.MuiTypography-root {
+    color: var(--t-primary) !important;
+    font-family: var(--t-font) !important;
+}
+
+.MuiTypography-h5,
+.MuiTypography-h6 {
+    text-shadow: var(--t-glow) !important;
+    animation: textGlow 4s ease-in-out infinite;
+    letter-spacing: 2px !important;
+}
+
+/* Logo image */
+.MuiAvatar-root img,
+img[alt*="logo" i],
+img[src*="logo" i] {
+    filter: drop-shadow(0 0 8px var(--t-primary));
+}
+
+/* === Form Elements === */
+
+/* Text fields — outlined variant */
+.MuiOutlinedInput-root {
+    background: rgba(0, 0, 0, 0.8) !important;
+    border-radius: 0 !important;
+}
+
+.MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline {
+    border-color: var(--t-primary-dark) !important;
+    border-width: 1px !important;
+}
+
+.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+    border-color: var(--t-primary-dim) !important;
+}
+
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+    border-color: var(--t-primary) !important;
+    box-shadow: var(--t-glow) !important;
+    border-width: 1px !important;
+}
+
+.MuiOutlinedInput-input,
+.MuiInputBase-input {
+    color: var(--t-primary) !important;
+    font-family: var(--t-font) !important;
+    font-size: 1.1rem !important;
+    caret-color: var(--t-primary) !important;
+}
+
+/* Labels */
+.MuiFormLabel-root,
+.MuiInputLabel-root {
+    color: var(--t-primary-dim) !important;
+    font-family: var(--t-font) !important;
+    font-size: 1.1rem !important;
+}
+
+.MuiFormLabel-root.Mui-focused,
+.MuiInputLabel-root.Mui-focused {
+    color: var(--t-primary) !important;
+}
+
+/* === Buttons === */
+
+/* Primary / contained buttons (Sign In) */
+.MuiButton-contained,
+#sign-in-button {
+    background: transparent !important;
+    color: var(--t-primary) !important;
+    border: 1px solid var(--t-primary) !important;
+    border-radius: 0 !important;
+    font-family: var(--t-font) !important;
+    font-size: 1.2rem !important;
+    letter-spacing: 3px !important;
+    text-transform: uppercase !important;
+    text-shadow: var(--t-glow) !important;
+    box-shadow: 0 0 10px rgba(0, 255, 65, 0.2) !important;
+    transition: all 0.3s ease !important;
+}
+
+.MuiButton-contained:hover,
+#sign-in-button:hover {
+    background: var(--t-primary) !important;
+    color: var(--t-bg-dark) !important;
+    text-shadow: none !important;
+    box-shadow: var(--t-glow-strong) !important;
+}
+
+/* Text buttons (forgot password, etc.) */
+.MuiButton-text {
+    color: var(--t-primary-dim) !important;
+    font-family: var(--t-font) !important;
+}
+
+.MuiButton-text:hover {
+    color: var(--t-primary) !important;
+    background: rgba(0, 255, 65, 0.05) !important;
+}
+
+/* Icon buttons (password visibility toggle) */
+.MuiIconButton-root {
+    color: var(--t-primary-dim) !important;
+}
+
+.MuiIconButton-root:hover {
+    color: var(--t-primary) !important;
+    background: rgba(0, 255, 65, 0.1) !important;
+}
+
+/* === Checkbox === */
+
+.MuiCheckbox-root {
+    color: var(--t-primary-dark) !important;
+}
+
+.MuiCheckbox-root.Mui-checked {
+    color: var(--t-primary) !important;
+}
+
+.MuiFormControlLabel-label {
+    color: var(--t-primary-dim) !important;
+    font-family: var(--t-font) !important;
+}
+
+/* === Alerts === */
+
+.MuiAlert-root {
+    background: rgba(0, 255, 65, 0.05) !important;
+    color: var(--t-primary) !important;
+    border: 1px solid var(--t-primary-dark) !important;
+    border-radius: 0 !important;
+}
+
+.MuiAlert-icon {
+    color: var(--t-primary) !important;
+}
+
+.MuiAlertTitle-root {
+    color: var(--t-primary) !important;
+    font-family: var(--t-font) !important;
+}
+
+/* Error alerts */
+.MuiAlert-standardError {
+    background: rgba(255, 0, 0, 0.05) !important;
+    border-color: #ff0040 !important;
+    color: #ff4060 !important;
+}
+
+.MuiAlert-standardError .MuiAlert-icon {
+    color: #ff4060 !important;
+}
+
+/* === Links === */
+
+a, .MuiLink-root {
+    color: var(--t-primary-dim) !important;
+    text-decoration: none !important;
+}
+
+a:hover, .MuiLink-root:hover {
+    color: var(--t-primary) !important;
+    text-shadow: var(--t-glow) !important;
+}
+
+/* === Loading / Progress === */
+
+.MuiCircularProgress-root {
+    color: var(--t-primary) !important;
+}
+
+.MuiLinearProgress-root {
+    background-color: var(--t-primary-dark) !important;
+}
+
+.MuiLinearProgress-bar {
+    background-color: var(--t-primary) !important;
+}
+
+/* === TOTP / Second Factor === */
+
+/* OTP input fields get the same treatment */
+input[type="tel"],
+input[inputmode="numeric"] {
+    background: rgba(0, 0, 0, 0.8) !important;
+    color: var(--t-primary) !important;
+    border: 1px solid var(--t-primary-dark) !important;
+    font-family: var(--t-font) !important;
+    font-size: 1.5rem !important;
+    caret-color: var(--t-primary) !important;
+}
+
+/* === Misc === */
+
+/* Dividers */
+.MuiDivider-root {
+    border-color: var(--t-primary-dark) !important;
+}
+
+/* Tooltips */
+.MuiTooltip-tooltip {
+    background: var(--t-bg-dark) !important;
+    color: var(--t-primary) !important;
+    border: 1px solid var(--t-primary-dark) !important;
+    font-family: var(--t-font) !important;
+    border-radius: 0 !important;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+    width: 8px;
+    background: var(--t-bg-dark);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--t-primary-dark);
+    border: 1px solid var(--t-primary-dim);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--t-primary-dim);
+}
+
+/* Privacy policy drawer */
+.MuiDrawer-paper {
+    background: var(--t-bg-dark) !important;
+    color: var(--t-primary) !important;
+    border-left: 1px solid var(--t-primary-dark) !important;
+}

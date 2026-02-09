@@ -1,0 +1,6 @@
+.env
+caddy_data/
+caddy_config/
+code-server-config/
+authelia/db.sqlite3
+authelia/notification.txt
