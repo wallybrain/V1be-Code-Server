@@ -1,0 +1,9 @@
+[Unit]
+Description=Run Lynis and rkhunter security scan
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash /home/lwb3/v1be-code-server/security-scan.sh
+# Load Discord webhook URL from env file if present
+EnvironmentFile=-/home/lwb3/v1be-code-server/.env

@@ -10,12 +10,12 @@ docker run --rm --privileged --net=host ubuntu:24.04 bash -c \
   "apt-get update -qq && apt-get install -y -qq iptables > /dev/null 2>&1 && \
    \
    # ACCEPT: Docker bridge -> host services
-   iptables -C INPUT -i br-XXXXXXXXXXXX -p tcp --dport 8080 -j ACCEPT 2>/dev/null || \
-   iptables -I INPUT -i br-XXXXXXXXXXXX -p tcp --dport 8080 -j ACCEPT && \
+   iptables -C INPUT -i br-03b170a2a124 -p tcp --dport 8080 -j ACCEPT 2>/dev/null || \
+   iptables -I INPUT -i br-03b170a2a124 -p tcp --dport 8080 -j ACCEPT && \
    echo 'ACCEPT bridge -> port 8080 (code-server)' && \
    \
-   iptables -C INPUT -i br-XXXXXXXXXXXX -p tcp --dport 11434 -j ACCEPT 2>/dev/null || \
-   iptables -I INPUT -i br-XXXXXXXXXXXX -p tcp --dport 11434 -j ACCEPT && \
+   iptables -C INPUT -i br-03b170a2a124 -p tcp --dport 11434 -j ACCEPT 2>/dev/null || \
+   iptables -I INPUT -i br-03b170a2a124 -p tcp --dport 11434 -j ACCEPT && \
    echo 'ACCEPT bridge -> port 11434 (ollama)' && \
    \
    # DROP: Block external access to internal-only ports

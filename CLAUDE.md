@@ -111,13 +111,45 @@ docker exec authelia cat /config/notification.txt
 - **Continue.dev can't reach Ollama**: Check `apiBase` in Continue config points to `https://ollama.example.com` with correct bearer token
 
 ## Security Hardening
-- **Firewall (fix-iptables.sh)**: Ports 8080, 11434, 9999 are DROPped on eth0 — only reachable via localhost, Tailscale, or Docker bridge
-- **Caddyfile headers**: `X-Frame-Options`, `X-Content-Type-Options`, `Strict-Transport-Security`, `Referrer-Policy` on main site
-- **`.git` blocking**: `handle /.git*` returns 404 before file_server can serve repo metadata
-- **`.env` permissions**: All `.env` files set to `600` (owner-only)
-- **SSH**: Password auth disabled, root login prohibited, max 3 auth tries
-- **fail2ban**: Active for brute-force protection
-- **Postfix**: Should be set to `inet_interfaces = loopback-only` (requires sudo to change)
+
+### Lynis Assessment (2026-02-10) — Score: 79/100
+Full audit performed with Lynis and rkhunter. Hardening script at `/home/lwb3/harden.sh` applied 12 remediations, raising the score from 66 → 79.
+
+**What was hardened:**
+| Area | Detail |
+|------|--------|
+| SSH | Key-only auth, no root, drop-in at `/etc/ssh/sshd_config.d/99-lynis-hardening.conf` (AllowTcpForwarding=no, LogLevel=VERBOSE, MaxSessions=2) |
+| Firewall | UFW default DROP, only ports 22 + 8567 allowed; iptables DROP eth0→8080/11434/9999 |
+| Kernel | sysctl hardened (`/etc/sysctl.d/99-lynis-hardening.conf`) — martian logging, no source routing, kptr_restrict=2, BPF JIT hardened, Docker-safe (forwarding=1) |
+| Audit | auditd rules for auth files, sudoers, SSH config, cron, network, firewall changes (`/etc/audit/rules.d/lynis-hardening.rules`) |
+| Network | Postfix loopback-only, banner stripped; unused protocols blacklisted (dccp, sctp, rds, tipc) |
+| Auth | fail2ban active, libpam-pwquality installed, SHA_CRYPT rounds 5000-10000, umask 027 |
+| Integrity | rkhunter + debsums installed, core dumps disabled, legal banners set |
+| Headers | Caddy: HSTS, X-Frame-Options DENY, X-Content-Type-Options nosniff, Referrer-Policy |
+| Blocking | `.git` and `.env` paths return 404 |
+
+### Automated Security Scanning
+Monthly scans via systemd timer — runs rkhunter (rootkit/integrity) and Lynis (hardening audit), logs to `/var/log/security-scan/`, sends Discord alert on score regression or rkhunter warnings.
+
+```bash
+# Install the timer
+sudo cp security-scan.service security-scan.timer /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now security-scan.timer
+
+# Run manually
+sudo bash security-scan.sh
+
+# After apt upgrade — update rkhunter's binary baseline
+sudo bash security-scan.sh --update-baseline
+```
+
+| File | Purpose |
+|------|---------|
+| `security-scan.sh` | Runs rkhunter + Lynis, logs results, Discord alerts on regression |
+| `security-scan.service` | systemd oneshot unit |
+| `security-scan.timer` | Monthly trigger with randomized delay |
+| `/home/lwb3/harden.sh` | Original hardening script (12 remediations) |
 
 ## Key Lessons (for future reference)
 - Docker port mappings bypass host firewalls (FORWARD chain); `network_mode: host` does not (INPUT chain)

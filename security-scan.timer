@@ -1,0 +1,19 @@
+# systemd timer for monthly security scans
+# Install:
+#   sudo cp security-scan.service security-scan.timer /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now security-scan.timer
+#
+# Check schedule: systemctl list-timers security-scan.timer
+# Run now:        sudo systemctl start security-scan.service
+
+[Unit]
+Description=Monthly security scan (Lynis + rkhunter)
+
+[Timer]
+OnCalendar=monthly
+RandomizedDelaySec=3600
+Persistent=true
+
+[Install]
+WantedBy=timers.target
