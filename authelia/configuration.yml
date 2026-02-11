@@ -8,9 +8,9 @@ log:
   level: info
 
 totp:
-  issuer: example.com
+  issuer: wallyblanchard.com
   period: 30
-  skew: 1
+  skew: 2
 
 authentication_backend:
   file:
@@ -19,18 +19,24 @@ authentication_backend:
 access_control:
   default_policy: deny
   rules:
-    - domain: code.example.com
+    - domain: code.wallyblanchard.com
       policy: two_factor
-    - domain: example.com
+    - domain: wallybrain.icu
       resources:
-        - '^/music/admin'
+        - '^/admin'
       policy: two_factor
 
 session:
+  expiration: 8h
+  inactivity: 2h
+  remember_me: 30d
   cookies:
-    - domain: example.com
-      authelia_url: https://auth.example.com
-      default_redirection_url: https://code.example.com
+    - domain: wallyblanchard.com
+      authelia_url: https://auth.wallyblanchard.com
+      default_redirection_url: https://code.wallyblanchard.com
+    - domain: wallybrain.icu
+      authelia_url: https://auth.wallybrain.icu
+      default_redirection_url: https://wallybrain.icu
 
 storage:
   local:

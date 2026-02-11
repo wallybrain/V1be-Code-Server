@@ -3,11 +3,32 @@ auth.{$DOMAIN} {
 		root * /srv/authelia-theme
 		file_server
 	}
+	handle /autofill-fix.js {
+		root * /srv/authelia-theme
+		file_server
+	}
 	handle {
 		reverse_proxy authelia:9091 {
 			header_up Accept-Encoding identity
 		}
-		replace </head> "<link rel='stylesheet' href='/custom-auth.css'></head>"
+		replace </head> "<link rel='stylesheet' href='/custom-auth.css'><script src='/autofill-fix.js'></script></head>"
+	}
+}
+
+auth.wallybrain.icu {
+	handle /custom-auth.css {
+		root * /srv/authelia-theme
+		file_server
+	}
+	handle /autofill-fix.js {
+		root * /srv/authelia-theme
+		file_server
+	}
+	handle {
+		reverse_proxy authelia:9091 {
+			header_up Accept-Encoding identity
+		}
+		replace </head> "<link rel='stylesheet' href='/custom-auth.css'><script src='/autofill-fix.js'></script></head>"
 	}
 }
 
@@ -26,6 +47,30 @@ code.{$DOMAIN} {
 	reverse_proxy host.docker.internal:8080
 }
 
+wallybrain.icu {
+	header {
+		X-Frame-Options "SAMEORIGIN"
+		X-Content-Type-Options "nosniff"
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
+
+	# Admin routes: require Authelia 2FA
+	@admin path /admin /admin/*
+	handle @admin {
+		forward_auth authelia:9091 {
+			uri /api/authz/forward-auth
+			copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
+		}
+		reverse_proxy wallybrain-music:8800
+	}
+
+	# Everything else: public music site
+	handle {
+		reverse_proxy wallybrain-music:8800
+	}
+}
+
 {$DOMAIN} {
 	header {
 		X-Frame-Options "SAMEORIGIN"
@@ -42,20 +87,12 @@ code.{$DOMAIN} {
 		respond 404
 	}
 
-	# Admin music routes: require Authelia 2FA
-	@admin path /music/admin /music/admin/*
-	handle @admin {
-		forward_auth authelia:9091 {
-			uri /api/authz/forward-auth
-			copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
-		}
-		reverse_proxy wallybrain-music:8800
+	# Redirect old /music paths to new domain
+	handle /music {
+		redir https://wallybrain.icu/ permanent
 	}
-
-	# Public music routes: no auth required
-	@music path /music /music/*
-	handle @music {
-		reverse_proxy wallybrain-music:8800
+	handle_path /music/* {
+		redir https://wallybrain.icu{uri} permanent
 	}
 
 	# Everything else: serve static Semantic Training site
