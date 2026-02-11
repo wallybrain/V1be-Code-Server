@@ -2,7 +2,14 @@
 // React overrides the native input value setter, so direct DOM changes
 // (like 1Password fill) don't trigger state updates. This script
 // detects filled values and dispatches proper events exactly once.
+//
+// IMPORTANT: Only runs on the login page. Skipped on TOTP registration
+// and settings pages where autofill interferes with setup flows.
 (function () {
+  // Skip on TOTP registration/settings pages — autofill breaks these flows
+  var path = window.location.hash || window.location.pathname;
+  if (/one-time-password|totp|settings|register/i.test(path)) return;
+
   var nativeSetter = Object.getOwnPropertyDescriptor(
     HTMLInputElement.prototype,
     "value"
@@ -12,6 +19,8 @@
   var synced = {};
 
   function syncInput(el) {
+    // Only bridge username and password fields on the login page
+    if (el.type !== "text" && el.type !== "password") return;
     var key = el.id || el.name || el.type;
     var val = el.value;
     if (!val || synced[key] === val) return;
@@ -22,13 +31,17 @@
   }
 
   function poll() {
+    // Re-check path in case of SPA navigation
+    var curPath = window.location.hash || window.location.pathname;
+    if (/one-time-password|totp|settings|register/i.test(curPath)) return;
+
     var fields = document.querySelectorAll(
-      'input[type="text"], input[type="password"], input[type="tel"], input[type="number"]'
+      'input[type="text"], input[type="password"]'
     );
     fields.forEach(syncInput);
   }
 
-  // Poll for autofill changes for 30 seconds (covers login + TOTP screens)
+  // Poll for autofill changes for 30 seconds (covers login screen)
   var interval = setInterval(poll, 500);
   setTimeout(function () {
     clearInterval(interval);
