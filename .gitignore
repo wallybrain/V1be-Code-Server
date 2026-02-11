@@ -4,3 +4,4 @@ caddy_config/
 code-server-config/
 authelia/db.sqlite3
 authelia/notification.txt
+authelia/users_database.yml
