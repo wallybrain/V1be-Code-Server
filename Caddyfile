@@ -48,12 +48,15 @@ code.{$DOMAIN} {
 }
 
 wallybrain.icu {
+	request_body {
+		max_size 1GB
+	}
+
 	header {
 		X-Frame-Options "SAMEORIGIN"
 		X-Content-Type-Options "nosniff"
 		Strict-Transport-Security "max-age=31536000; includeSubDomains"
 		Referrer-Policy "strict-origin-when-cross-origin"
-		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self'; frame-ancestors 'self'"
 		Permissions-Policy "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()"
 	}
 
