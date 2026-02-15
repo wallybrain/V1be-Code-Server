@@ -21,6 +21,8 @@ access_control:
   rules:
     - domain: code.wallyblanchard.com
       policy: two_factor
+    - domain: play.wallybrain.icu
+      policy: two_factor
     - domain: wallybrain.icu
       resources:
         - '^/admin'
